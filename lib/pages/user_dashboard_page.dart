@@ -243,25 +243,22 @@ class _UserDashboardState extends State<UserDashboard> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("STEMSET - My Assets"),
-        actions: [
-          IconButton(
-            onPressed: () => supabase.auth.signOut(),
-            icon: const Icon(Icons.logout),
-          ),
-        ],
+        title: Text(
+          _currentIndex == 0 ? "STEMSET - My Assets" : "Profil Pengguna",
+        ),
+        elevation: 0,
       ),
-      // Body akan berubah sesuai index navbar
+      // Update bagian ini:
       body:
           _currentIndex == 0
               ? _buildAssetList()
-              : const Center(child: Text("Halaman Profil (Coming Soon)")),
+              : _buildProfilePage(), // Memanggil halaman profil
 
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {
           if (index == 1) {
-            _openScanner(); // Panggil scanner jika tombol tengah diklik
+            _openScanner();
           } else {
             setState(() => _currentIndex = index);
           }
@@ -304,6 +301,76 @@ class _UserDashboardState extends State<UserDashboard> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildProfilePage() {
+    final user = supabase.auth.currentUser;
+
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
+      child: Column(
+        children: [
+          const SizedBox(height: 20),
+          // Avatar / Foto Profil
+          CircleAvatar(
+            radius: 50,
+            backgroundColor: Colors.blue.shade100,
+            child: const Icon(Icons.person, size: 60, color: Colors.blue),
+          ),
+          const SizedBox(height: 20),
+          // Informasi User
+          Text(
+            user?.userMetadata?['full_name'] ?? "User Stella Maris",
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          Text(user?.email ?? "-", style: const TextStyle(color: Colors.grey)),
+          const SizedBox(height: 40),
+          const Divider(),
+          // Menu Pengaturan/Bantuan
+          ListTile(
+            leading: const Icon(Icons.help_outline),
+            title: const Text("Pusat Bantuan"),
+            onTap: () {},
+          ),
+          ListTile(
+            leading: const Icon(Icons.info_outline),
+            title: const Text("Tentang STEMSET v1.0"),
+            onTap: () {},
+          ),
+          const Spacer(),
+          // Tombol Logout
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: OutlinedButton.icon(
+              icon: const Icon(Icons.logout, color: Colors.red),
+              label: const Text(
+                "KELUAR APLIKASI",
+                style: TextStyle(color: Colors.red),
+              ),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Colors.red),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onPressed: () async {
+                await supabase.auth.signOut();
+                // Setelah logout, arahkan kembali ke LoginPage
+                if (mounted) {
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    '/',
+                    (route) => false,
+                  );
+                }
+              },
+            ),
+          ),
+          const SizedBox(height: 20),
+        ],
+      ),
     );
   }
 }
