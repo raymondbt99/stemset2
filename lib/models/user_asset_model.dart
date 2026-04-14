@@ -4,7 +4,7 @@ class UserAsset {
   final String name;
   final String status;
   final String purchaseDate;
-  final String roomName; // Data dari tabel rooms
+  final String roomName;
   final String? description;
 
   UserAsset({
@@ -17,18 +17,24 @@ class UserAsset {
     this.description,
   });
 
-  // Factory method untuk mengubah JSON dari Supabase menjadi Object Flutter
+  // Getter untuk mempermudah pengecekan status di UI (Warna Badge)
+  bool get isMaintenance => status.toLowerCase() == 'maintenance';
+  bool get isAvailable => status.toLowerCase() == 'available';
+  bool get isBroken => status.toLowerCase() == 'broken';
+
+  // Factory method untuk mapping JSON dari Supabase
   factory UserAsset.fromJson(Map<String, dynamic> json) {
     return UserAsset(
       id: json['id'] ?? '',
-      assetCode: json['asset_code'] ?? '',
-      name: json['name'] ?? '',
+      assetCode: json['asset_code'] ?? 'NO-CODE',
+      name: json['name'] ?? 'Unnamed Asset',
       status: json['status'] ?? 'available',
       purchaseDate: json['purchase_date'] ?? '',
-      // Mengambil room_name dari relasi tabel rooms
-      // Supabase mengembalikan relasi dalam bentuk Map/Object nested
+      // Menangani join table dari 'rooms'
       roomName:
-          json['rooms'] != null ? json['rooms']['room_name'] : 'Tanpa Ruangan',
+          json['rooms'] != null
+              ? json['rooms']['room_name']
+              : 'General Storage',
       description: json['description'],
     );
   }
